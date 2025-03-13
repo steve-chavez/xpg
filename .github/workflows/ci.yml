@@ -28,7 +28,7 @@ jobs:
         run: nix-build | cachix push nxpg
 
   build-on-macos:
-    runs-on: macos-15-arm64
+    runs-on: macos-15
 
     steps:
       - uses: actions/checkout@v4
