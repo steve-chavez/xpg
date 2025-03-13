@@ -1,3 +1,5 @@
+# Taken from https://github.com/PostgREST/postgrest/blob/4348cb205738a8497fadcaed4ab6015aa465b87d/nix/overlays/checked-shell-script/checked-shell-script.nix
+
 # Create a bash script that is checked with shellcheck. You can either use it
 # directly, or use the .bin attribute to get the script in a bin/ directory,
 # to be used in a path for example.
