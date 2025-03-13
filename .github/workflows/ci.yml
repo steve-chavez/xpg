@@ -13,10 +13,28 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Install Nix
-        uses: cachix/install-nix-action@v21
+        uses: cachix/install-nix-action@v30
+
+      - name: Use Cachix Cache
+        uses: cachix/cachix-action@v10
+        with:
+          name: nxpg
+          authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
+
+      - name: Build
+        run: nix-store -qR --include-outputs $(nix-instantiate) | cachix push nxpg
+
+  build-on-macos:
+    runs-on: macos-13
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@v30
 
       - name: Use Cachix Cache
         uses: cachix/cachix-action@v10
