@@ -14,9 +14,9 @@ let
   checked-shell-script = callPackage ./nix/checked-shell-script.nix {
     inherit lib;
   };
-  nxpg = callPackage ./nix/nxpg.nix {
+  xpg = callPackage ./nix/xpg.nix {
     inherit ourPg;
     inherit checked-shell-script;
   };
 in
-nxpg
+xpg

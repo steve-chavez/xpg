@@ -5,9 +5,9 @@ let
     # Do this so we can do `backtrace` once a segfault occurs. Otherwise once SIGSEGV is received the bgworker will quit and we can't backtrace.
     handle SIGSEGV stop nopass
   '';
-  nxpg = checked-shell-script
+  xpg = checked-shell-script
   {
-    name = "nxpg";
+    name = "xpg";
     docs = "Build a postgres extension";
     args = [
       "ARG_POSITIONAL_SINGLE([operation], [Operation])"
@@ -45,7 +45,7 @@ let
   pid_file_name="$BUILD_DIR"/bgworker.pid
 
   if [ "$_arg_operation" == gdb ] && [ ! -e "$pid_file_name" ]; then
-      echo 'The background worker is not started. First you have to run "nxpg psql".'
+      echo 'The background worker is not started. First you have to run "xpg psql".'
       exit 1
   fi
 
@@ -182,4 +182,4 @@ let
     esac
   '';
 in
-nxpg.bin
+xpg.bin
