@@ -18,5 +18,12 @@ let
     inherit ourPg;
     inherit checked-shell-script;
   };
+  xpg-core = callPackage ./nix/xpg-core.nix {
+    inherit ourPg;
+    inherit checked-shell-script;
+  };
 in
-xpg
+{
+  xpg = xpg;
+  xpg-core = xpg-core;
+}

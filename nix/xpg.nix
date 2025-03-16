@@ -8,7 +8,7 @@ let
   xpg = checked-shell-script
   {
     name = "xpg";
-    docs = "Build a postgres extension";
+    docs = "Develop native PostgreSQL extensions";
     args = [
       "ARG_POSITIONAL_SINGLE([operation], [Operation])"
       "ARG_TYPE_GROUP_SET([OPERATION], [OPERATION], [operation], [build,test,coverage,psql,gdb])"

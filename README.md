@@ -3,7 +3,8 @@
 ```
 $ xpg-core -h
 Usage: xpg-core [-h|--help] [--] <operation> ...
-        <operation>: Operation. Can be one of: 'build', 'test', 'tap', 'psql', and 'docs'
+        <operation>: Operation. Can be one of: 'build', 'test' and 'psql'
+        ... : psql arguments
         -h, --help: Prints help
 
 Develop PostgreSQL core
