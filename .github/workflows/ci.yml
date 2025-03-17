@@ -27,14 +27,15 @@ jobs:
           authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
 
       - name: Build
-        run: nix-build
+        run: |
+          nix-build
+          cd examples/postgres
+          ../../result-2/bin/xpg-core build
 
       - name: Test
         run: |
-          cd examples/postgres
-          ../../result-2/bin/xpg-core build
-          ../../result-2/bin/xpg-core psql -v ON_ERROR_STOP=1 -c "SELECT true;"
-          ../../result-2/bin/xpg-core test
+          ./result-2/bin/xpg-core psql -v ON_ERROR_STOP=1 -c "SELECT true;"
+          ./result-2/bin/xpg-core test
 
       - name: Upload to cachix
         run: nix-build | cachix push nxpg
