@@ -7,9 +7,10 @@ let
     # Do this so we can do `backtrace` once a segfault occurs. Otherwise once SIGSEGV is received the bgworker will quit and we can't backtrace.
     handle SIGSEGV stop nopass
   '';
-  xpg-core = checked-shell-script
+  commandName = "xpg-core";
+  command = checked-shell-script
   {
-    name = "xpg-core";
+    name = commandName;
     docs = "Develop PostgreSQL core";
     args = [
       "ARG_POSITIONAL_SINGLE([operation], [Operation])"
@@ -45,27 +46,40 @@ let
   case "$_arg_operation" in
 
     build)
+      if [ ! -f ./configure ] && [ ! -f ./Makefile ]; then
+        echo "You're not on a directory that contains the PostgreSQL source code. First run \"cd /path/of/your/postgres\""
+        exit 1
+      fi
+
       mkdir -p "$BUILD_DIR"
 
       cd "$BUILD_DIR"
 
-      if [ ! -f "$BUILD_DIR/config.status" ]; then
-        ../configure --enable-cassert --with-python --prefix "$BUILD_DIR"
+      if [ ! -f ./config.status ]; then
+        ../configure --enable-cassert --prefix "$BUILD_DIR"
       fi
 
-      echo 'Building pg...'
-
-      make -j16 -s
+      make -j16
       make install -j16 -s
       ;;
 
     test)
+      if [ ! -f "$BUILD_DIR/bin/psql" ]; then
+        echo 'PostgreSQL artifacts not built. First run "${commandName} build".'
+        exit 1
+      fi
+
       cd "$BUILD_DIR"
 
       make check -s
       ;;
 
     psql)
+      if [ ! -f "$BUILD_DIR/bin/psql" ]; then
+        echo 'PostgreSQL artifacts not built. First run "${commandName} build".'
+        exit 1
+      fi
+
       tmpdir="$(mktemp -d)"
 
       export PGDATA="$tmpdir"
@@ -87,4 +101,4 @@ let
     esac
   '';
 in
-xpg-core.bin
+command.bin
