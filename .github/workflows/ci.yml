@@ -34,8 +34,9 @@ jobs:
 
       - name: Test
         run: |
-          ./result-2/bin/xpg-core psql -v ON_ERROR_STOP=1 -c "SELECT true;"
-          ./result-2/bin/xpg-core test
+          cd examples/postgres
+          ../../result-2/bin/xpg-core psql -v ON_ERROR_STOP=1 -c "SELECT true;"
+          ../../result-2/bin/xpg-core test
 
       - name: Upload to cachix
         run: nix-build | cachix push nxpg

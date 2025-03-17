@@ -43,14 +43,22 @@ let
   export CFLAGS="-I${zlib.dev}/include ''${CFLAGS:-}"
   export LDFLAGS="-L${zlib}/lib ''${LDFLAGS:-}"
 
-  case "$_arg_operation" in
+  # all commands require that the user is in the pg directory
+  if [ ! -f configure ]; then
+    echo "You're not on a directory that contains the PostgreSQL source code. First run \"cd /path/of/your/postgres\""
+    exit 1
+  fi
 
-    build)
-      if [ ! -f ./configure ] && [ ! -f ./Makefile ]; then
-        echo "You're not on a directory that contains the PostgreSQL source code. First run \"cd /path/of/your/postgres\""
+  # these commands require the build artifacts
+  if [ "$_arg_operation" == test ] || [ "$_arg_operation" == psql ]; then
+      if [ ! -f "$BUILD_DIR/bin/psql" ]; then
+        echo 'PostgreSQL artifacts not built. First run "${commandName} build".'
         exit 1
       fi
+  fi
 
+  case "$_arg_operation" in
+    build)
       mkdir -p "$BUILD_DIR"
 
       cd "$BUILD_DIR"
@@ -64,22 +72,12 @@ let
       ;;
 
     test)
-      if [ ! -f "$BUILD_DIR/bin/psql" ]; then
-        echo 'PostgreSQL artifacts not built. First run "${commandName} build".'
-        exit 1
-      fi
-
       cd "$BUILD_DIR"
 
       make check -s
       ;;
 
     psql)
-      if [ ! -f "$BUILD_DIR/bin/psql" ]; then
-        echo 'PostgreSQL artifacts not built. First run "${commandName} build".'
-        exit 1
-      fi
-
       tmpdir="$(mktemp -d)"
 
       export PGDATA="$tmpdir"
