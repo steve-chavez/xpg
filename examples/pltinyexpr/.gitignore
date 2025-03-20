@@ -1,0 +1,10 @@
+regression.*
+results/
+*.so
+*.o
+*.bc
+.vimrc
+*.diffs
+*.out
+coverage.info
+coverage_html

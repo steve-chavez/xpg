@@ -24,7 +24,6 @@ let
     automake
     pkg-config
     readline zlib bison icu flex
-    # ... add as many as you need
   ]}:$PATH"
 
   export OUR_SHELL="${bash}/bin/bash"

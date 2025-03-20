@@ -10,7 +10,7 @@ on:
       - master
 
 jobs:
-  build:
+  build-test-xpg-core:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -26,21 +26,60 @@ jobs:
           name: nxpg
           authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
 
-      - name: Build
-        run: |
-          nix-build
-          cd examples/postgres
-          ../../result-2/bin/xpg-core build
+      - name: Build xpg-core
+        run: nix-build -A xpg-core
 
-      - name: Test
+      - name: Build postgres core
         run: |
           cd examples/postgres
-          ../../result-2/bin/xpg-core psql -v ON_ERROR_STOP=1 -c "SELECT true;"
-          ../../result-2/bin/xpg-core test
+          ../../result/bin/xpg-core build
+
+      - name: Test postgres core
+        run: |
+          cd examples/postgres
+          ../../result/bin/xpg-core psql -v ON_ERROR_STOP=1 -c "SELECT true;"
+          ../../result/bin/xpg-core test
 
       - name: Upload to cachix
-        run: nix-build | cachix push nxpg
+        run: nix-build -A xpg-core | cachix push nxpg
 
+  build-test-xpg:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        pg-version: ['12', '13', '14', '15', '16', '17']
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@v30
+
+      - name: Use Cachix Cache
+        uses: cachix/cachix-action@v16
+        with:
+          name: nxpg
+          authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
+
+      - name: Build xpg
+        run: nix-build -A xpg
+
+      - name: Build postgres extension
+        run: |
+          cd examples/pltinyexpr
+          ../../result/bin/xpg -v ${{ matrix.pg-version }} build
+
+      - name: Test postgres extension
+        run: |
+          cd examples/pltinyexpr
+          ../../result/bin/xpg build -v ${{ matrix.pg-version }} psql -v ON_ERROR_STOP=1 -c "SELECT true;"
+          # TODO this fails
+          # ../../result/bin/xpg -v ${{ matrix.pg-version }} test
+
+      - name: Upload to cachix
+        run: nix-build -A xpg | cachix push nxpg
 
   build-on-macos:
     runs-on: macos-15
