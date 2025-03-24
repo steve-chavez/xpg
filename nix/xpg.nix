@@ -49,9 +49,15 @@ let
       exit 1
   fi
 
+  COVERAGE_INFO=$BUILD_DIR/coverage.info
+
   # commands that require the build ready
   case "$_arg_operation" in
     coverage)
+      if [ ! -f "$COVERAGE_INFO" ]; then
+        rm -rf "$BUILD_DIR"/*.o "$BUILD_DIR"/*.so
+      fi
+
       make COVERAGE=1
       ;;
 
@@ -135,20 +141,19 @@ let
       ;;
 
     coverage)
-      info_file="coverage.info"
-      out_dir="coverage_html"
+      coverage_out_dir=$BUILD_DIR/coverage_html
 
       make test
 
-      ${lcov}/bin/lcov --capture --directory . --output-file "$info_file"
+      ${lcov}/bin/lcov --capture --directory . --output-file "$COVERAGE_INFO"
 
       # remove postgres headers on the nix store, otherwise they show on the output
-      ${lcov}/bin/lcov --remove "$info_file" '/nix/*' --output-file "$info_file" || true
+      ${lcov}/bin/lcov --remove "$COVERAGE_INFO" '/nix/*' --output-file "$COVERAGE_INFO" || true
 
-      ${lcov}/bin/lcov --list coverage.info
-      ${lcov}/bin/genhtml "$info_file" --output-directory "$out_dir"
+      ${lcov}/bin/lcov --list "$COVERAGE_INFO"
+      ${lcov}/bin/genhtml "$COVERAGE_INFO" --output-directory "$coverage_out_dir"
 
-      echo -e "\nTo see the results, visit file://$(pwd)/$out_dir/index.html on your browser\n"
+      echo -e "\nTo see the results, visit file://$(pwd)/$coverage_out_dir/index.html on your browser\n"
       ;;
 
     psql)
