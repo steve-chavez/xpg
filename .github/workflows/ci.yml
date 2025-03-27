@@ -38,6 +38,7 @@ jobs:
         run: |
           cd examples/postgres
           ../../result/bin/xpg-core psql -v ON_ERROR_STOP=1 -c "SELECT true;"
+          ../../result/bin/xpg-core -k box test
           ../../result/bin/xpg-core test
 
       - name: Upload to cachix

@@ -15,6 +15,7 @@ let
     args = [
       "ARG_POSITIONAL_SINGLE([operation], [Operation])"
       "ARG_TYPE_GROUP_SET([OPERATION], [OPERATION], [operation], [build,test,psql])"
+      "ARG_OPTIONAL_SINGLE([keyword], [k], [regression test name],)"
       "ARG_LEFTOVERS([psql arguments])"
     ];
   }
@@ -73,7 +74,12 @@ let
     test)
       cd "$BUILD_DIR"
 
-      make check -s
+      if [ -n "$_arg_keyword" ]; then
+        # careful with this as tests have dependencies on other tests so running a single one could fail
+        make check-tests -s TESTS="$_arg_keyword"
+      else
+        make check -s
+      fi
       ;;
 
     psql)
