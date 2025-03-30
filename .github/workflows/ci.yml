@@ -82,6 +82,29 @@ jobs:
       - name: Upload to cachix
         run: nix-build -A xpg | cachix push nxpg
 
+  test-nix-expressions:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@v30
+
+      - name: Use Cachix Cache
+        uses: cachix/cachix-action@v16
+        with:
+          name: nxpg
+          authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
+
+      - name: Test xpgWithExtensions
+        run: |
+          nix-build tests
+          cd examples/pltinyexpr
+          ../../result/bin/xpg -v 15 psql -v ON_ERROR_STOP=1 -c "CREATE EXTENSION plpgsql_check;"
+
   build-on-macos:
     runs-on: macos-15
 

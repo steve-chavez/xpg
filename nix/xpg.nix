@@ -1,10 +1,15 @@
-{ stdenv, lib, makeWrapper, fetchurl, writeShellScriptBin, findutils, entr, lcov, gnused, gdb, writeText, ourPg, checked-shell-script } :
+{
+  stdenv, lib, makeWrapper, fetchurl, writeShellScriptBin, findutils, entr, lcov, gnused,
+  gdb, writeText, ourPg, checked-shell-script,
+  exts12? [], exts13? [], exts14? [], exts15? [], exts16? [], exts17? []
+} :
 let
   isLinux = stdenv.isLinux;
   gdbConf = writeText "gdbconf" ''
     # Do this so we can do `backtrace` once a segfault occurs. Otherwise once SIGSEGV is received the bgworker will quit and we can't backtrace.
     handle SIGSEGV stop nopass
   '';
+  buildExtPaths = exts: builtins.concatStringsSep ":" (exts ++ ["$(pwd)/$BUILD_DIR"]); # also append the local build directory
   xpg = checked-shell-script
   {
     name = "xpg";
@@ -18,32 +23,41 @@ let
     ];
   }
   ''
+  export BUILD_DIR="build-$_arg_version" # this needs to be exported so external `make` commands pick it up
+
   case "$_arg_version" in
     17)
       export PATH=${ourPg.postgresql_17}/bin:"$PATH"
+      _ext_paths=${buildExtPaths exts17}
       ;;
     16)
       export PATH=${ourPg.postgresql_16}/bin:"$PATH"
+      _ext_paths=${buildExtPaths exts16}
       ;;
     15)
       export PATH=${ourPg.postgresql_15}/bin:"$PATH"
+      _ext_paths=${buildExtPaths exts15}
       ;;
     14)
       export PATH=${ourPg.postgresql_14}/bin:"$PATH"
+      _ext_paths=${buildExtPaths exts14}
       ;;
     13)
       export PATH=${ourPg.postgresql_13}/bin:"$PATH"
+      _ext_paths=${buildExtPaths exts13}
       ;;
     12)
       export PATH=${ourPg.postgresql_12}/bin:"$PATH"
+      _ext_paths=${buildExtPaths exts12}
       ;;
   esac
 
-  export BUILD_DIR="build-$_arg_version"
+  EXT_DYNLIB_PATHS="$_ext_paths"
+  EXT_CONTROL_PATHS="$_ext_paths"
 
-  # fail fast for gdb command requirement
   pid_file_name="$BUILD_DIR"/bgworker.pid
 
+  # fail fast for gdb command requirement
   if [ "$_arg_operation" == gdb ] && [ ! -e "$pid_file_name" ]; then
       echo 'The background worker is not started. First you have to run "xpg psql".'
       exit 1
@@ -93,8 +107,8 @@ let
     # pg versions older than 16 don't support adding "-c" to initdb to add these options
     # so we just modify the resulting postgresql.conf to avoid an error
     {
-      echo "dynamic_library_path='\$libdir:$(pwd)/$BUILD_DIR'"
-      echo "extension_control_path='\$system:$(pwd)/$BUILD_DIR'"
+      echo "dynamic_library_path='\$libdir:$EXT_DYNLIB_PATHS'"
+      echo "extension_control_path='\$system:$EXT_CONTROL_PATHS'"
       echo "include 'init.conf'"
     } >> "$PGDATA"/postgresql.conf
 

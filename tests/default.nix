@@ -4,25 +4,27 @@ with import (builtins.fetchTarball {
     sha256 = "sha256:1lr1h35prqkd1mkmzriwlpvxcb34kmhc9dnr48gkm8hh089hifmx";
 }) {};
 let
-  ourPg = callPackage ./nix/postgresql {
+  ourPg = callPackage ../nix/postgresql {
     inherit lib;
     inherit stdenv;
     inherit fetchurl;
     inherit makeWrapper;
     inherit callPackage;
   };
-  checked-shell-script = callPackage ./nix/checked-shell-script.nix {
+  checked-shell-script = callPackage ../nix/checked-shell-script.nix {
     inherit lib;
   };
-in
-{
-  xpg = callPackage ./nix/xpg.nix {
+  xpg = callPackage ../nix/xpg.nix {
     inherit ourPg;
     inherit checked-shell-script;
   };
+  pgsqlcheck15 = callPackage ../nix/plpgsql-check.nix {
+    postgresql = ourPg.postgresql_15;
+  };
+  # TODO: this is duplicated with root/default.nix
   xpgWithExtensions =
     { exts12 ? [] , exts13 ? [] , exts14 ? [], exts15 ? [], exts16? [], exts17? [] } :
-    callPackage ./nix/xpg.nix {
+    callPackage ../nix/xpg.nix {
       inherit ourPg;
       inherit checked-shell-script;
       inherit exts12;
@@ -32,14 +34,7 @@ in
       inherit exts16;
       inherit exts17;
     };
-  xpg-core = callPackage ./nix/xpg-core.nix {
-    inherit ourPg;
-    inherit checked-shell-script;
-  };
-  postgresql_17 = ourPg.postgresql_17;
-  postgresql_16 = ourPg.postgresql_16;
-  postgresql_15 = ourPg.postgresql_15;
-  postgresql_14 = ourPg.postgresql_14;
-  postgresql_13 = ourPg.postgresql_13;
-  postgresql_12 = ourPg.postgresql_12;
+in
+{
+  xpg = (xpgWithExtensions { exts15 = [ pgsqlcheck15 ]; });
 }
