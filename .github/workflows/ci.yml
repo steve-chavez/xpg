@@ -75,7 +75,7 @@ jobs:
       - name: Test postgres extension
         run: |
           cd examples/pltinyexpr
-          ../../result/bin/xpg build -v ${{ matrix.pg-version }} psql -v ON_ERROR_STOP=1 -c "SELECT true;"
+          ../../result/bin/xpg -v ${{ matrix.pg-version }} psql -v ON_ERROR_STOP=1 -c "SELECT true;"
           # TODO this fails
           # ../../result/bin/xpg -v ${{ matrix.pg-version }} test
 

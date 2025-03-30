@@ -120,9 +120,9 @@ let
     fi
 
     if [ -f $init_conf ]; then
-      bgworker_name=$(grep '^shared_preload_libraries=' "$init_conf" | cut -d'=' -f2- | tr -d "'")
+      bgworker_name=$(grep '^shared_preload_libraries=' "$init_conf" | cut -d'=' -f2- | tr -d "'" || true)
 
-      if [[ -n "$bgworker_name" ]]; then
+      if [ ! "$bgworker_name" ]; then
         # save pid for future gdb invocation
         psql -t -c "\o $pid_file_name" -c "select pid from pg_stat_activity where backend_type ilike '%$bgworker_name%'"
         ${gnused}/bin/sed '/^''$/d;s/[[:blank:]]//g' -i "$pid_file_name"
