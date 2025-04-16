@@ -125,19 +125,27 @@ let
 
     pg_ctl start -o "$options"
 
-    createdb contrib_regression
-
     init_file=test/init.sql
 
-    if [ -f $init_file ]; then
-      psql -v ON_ERROR_STOP=1 -f $init_file -d contrib_regression
-    fi
+    # if not psql command just use the contrib_regression database for test running
+    if [ "$_arg_operation" != psql ]; then
+      createdb contrib_regression
 
-    if [ -f $init_conf ]; then
-      bgworker_name=$(grep '^shared_preload_libraries=' "$init_conf" | cut -d'=' -f2- | tr -d "'" || true)
+      if [ -f $init_file ]; then
+        psql -v ON_ERROR_STOP=1 -f $init_file -d contrib_regression
+      fi
+    else # else use the default postgres db
 
-      if [ ! "$bgworker_name" ]; then
-        # save pid for future gdb invocation
+      # TODO: if psql uses a different database, the init file and the pid file name creation won't work
+      if [ -f $init_file ]; then
+        psql -v ON_ERROR_STOP=1 -f $init_file
+      fi
+
+      # create a pid file in case the psql command is used, for later analysis
+      bgworker_name=$(grep -oP '^EXTENSION\s*=\s*\K\S+' Makefile) # TODO: assumes the bgworker has the same name as the extension on the Makefile
+
+      if [ -n "$bgworker_name" ]; then
+        # save pid for future invocation
         psql -t -c "\o $pid_file_name" -c "select pid from pg_stat_activity where backend_type ilike '%$bgworker_name%'"
         ${gnused}/bin/sed '/^''$/d;s/[[:blank:]]//g' -i "$pid_file_name"
       fi
