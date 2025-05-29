@@ -1,2 +1,4 @@
 result*
 .history
+examples/pltinyexpr/pltinyexpr.control
+examples/pltinyexpr/sql/pltinyexpr--*.sql

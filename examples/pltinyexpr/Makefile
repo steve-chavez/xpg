@@ -39,8 +39,8 @@ build: $(BUILD_DIR)/$(EXTENSION).so sql/$(EXTENSION)--$(EXTVERSION).sql $(EXTENS
 
 $(BUILD_DIR)/.gitignore: sql/$(EXTENSION)--$(EXTVERSION).sql $(EXTENSION).control
 	mkdir -p $(BUILD_DIR)
-	mv $(EXTENSION).control $(BUILD_DIR)
-	mv sql/$(EXTENSION)--$(EXTVERSION).sql $(BUILD_DIR)
+	cp $(EXTENSION).control $(BUILD_DIR)
+	cp sql/$(EXTENSION)--$(EXTVERSION).sql $(BUILD_DIR)
 	echo "*" > $(BUILD_DIR)/.gitignore
 
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c $(BUILD_DIR)/.gitignore
