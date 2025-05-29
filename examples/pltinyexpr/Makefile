@@ -1,5 +1,4 @@
 SRC_DIR = src
-BUILD_DIR ?= build
 
 # the `-Wno`s quiet C90 warnings
 PG_CFLAGS = -std=c11 -Wextra -Wall -Werror \
@@ -23,29 +22,38 @@ REGRESS_OPTS = --use-existing --inputdir=test
 
 MODULE_big = $(EXTENSION)
 SRC = $(wildcard $(SRC_DIR)/*.c)
+
+ifdef BUILD_DIR
 OBJS = $(patsubst $(SRC_DIR)/%.c, $(BUILD_DIR)/%.o, $(SRC))
+else
+OBJS = $(patsubst $(SRC_DIR)/%.c, src/%.o, $(SRC)) # if no BUILD_DIR, just build on src so standard PGXS `make` works
+endif
 
 PG_CONFIG = pg_config
 
 PG_CPPFLAGS := $(CPPFLAGS) -DEXTVERSION=\"$(EXTVERSION)\"
 
-build: $(BUILD_DIR)/.gitignore $(BUILD_DIR)/$(EXTENSION).so $(BUILD_DIR)/$(EXTENSION)--$(EXTVERSION).sql $(BUILD_DIR)/$(EXTENSION).control
+all: sql/$(EXTENSION)--$(EXTVERSION).sql $(EXTENSION).control
 
-$(BUILD_DIR)/.gitignore:
+build: $(BUILD_DIR)/$(EXTENSION).so sql/$(EXTENSION)--$(EXTVERSION).sql $(EXTENSION).control
+
+$(BUILD_DIR)/.gitignore: sql/$(EXTENSION)--$(EXTVERSION).sql $(EXTENSION).control
 	mkdir -p $(BUILD_DIR)
+	mv $(EXTENSION).control $(BUILD_DIR)
+	mv sql/$(EXTENSION)--$(EXTVERSION).sql $(BUILD_DIR)
 	echo "*" > $(BUILD_DIR)/.gitignore
 
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c $(BUILD_DIR)/.gitignore
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
 
-$(BUILD_DIR)/$(EXTENSION)--$(EXTVERSION).sql: sql/$(EXTENSION).sql
-	cp $< $@
-
-$(BUILD_DIR)/$(EXTENSION).control:
-	sed "s/@EXTVERSION@/$(EXTVERSION)/g" $(EXTENSION).control.in > $@
-
 $(BUILD_DIR)/$(EXTENSION).so: $(EXTENSION).so
 	mv $? $@
+
+sql/$(EXTENSION)--$(EXTVERSION).sql: sql/$(EXTENSION).sql
+	cp $< $@
+
+$(EXTENSION).control:
+	sed "s/@EXTVERSION@/$(EXTVERSION)/g" $(EXTENSION).control.in > $@
 
 PGXS := $(shell $(PG_CONFIG) --pgxs)
 include $(PGXS)

@@ -72,7 +72,7 @@ let
         rm -rf "$BUILD_DIR"/*.o "$BUILD_DIR"/*.so
       fi
 
-      make COVERAGE=1
+      make build COVERAGE=1
       ;;
 
     gdb)
@@ -80,7 +80,7 @@ let
       ;;
 
     *)
-      make
+      make build
       ;;
   esac
 
@@ -104,14 +104,6 @@ let
       bash $init_script
     fi
 
-    # pg versions older than 16 don't support adding "-c" to initdb to add these options
-    # so we just modify the resulting postgresql.conf to avoid an error
-    {
-      echo "dynamic_library_path='\$libdir:$EXT_DYNLIB_PATHS'"
-      echo "extension_control_path='\$system:$EXT_CONTROL_PATHS'"
-      echo "include 'init.conf'"
-    } >> "$PGDATA"/postgresql.conf
-
     init_conf=./test/init.conf
 
     if [ -f $init_conf ]; then
@@ -120,6 +112,14 @@ let
     else
       touch "$tmpdir"/init.conf
     fi
+
+    # pg versions older than 16 don't support adding "-c" to initdb to add these options
+    # so we just modify the resulting postgresql.conf to avoid an error
+    {
+      echo "dynamic_library_path='\$libdir:$EXT_DYNLIB_PATHS'"
+      echo "extension_control_path='\$system:$EXT_CONTROL_PATHS'"
+      echo "include 'init.conf'"
+    } >> "$PGDATA"/postgresql.conf
 
     options="-F -c listen_addresses=\"\" -k $PGDATA"
 
