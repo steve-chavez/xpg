@@ -96,7 +96,7 @@ let
 
     trap 'pg_ctl stop -m i && rm -rf "$tmpdir" && rm -rf "$pid_file_name"' sigint sigterm exit
 
-    PGTZ=UTC initdb --no-locale --encoding=UTF8 --nosync -U "$PGUSER"
+    PGTZ=UTC initdb -A trust --no-locale --encoding=UTF8 --nosync -U "$PGUSER"
 
     init_script=./test/init.sh
 

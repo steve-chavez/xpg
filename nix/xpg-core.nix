@@ -92,7 +92,7 @@ let
 
       trap 'pg_ctl stop -m i && rm -rf "$tmpdir"' sigint sigterm exit
 
-      PGTZ=UTC initdb --no-locale --encoding=UTF8 --nosync -U "$PGUSER"
+      PGTZ=UTC initdb -A trust --no-locale --encoding=UTF8 --nosync -U "$PGUSER"
 
       options="-F -c listen_addresses=\"\" -k $PGDATA"
 
