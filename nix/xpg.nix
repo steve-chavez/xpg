@@ -1,7 +1,7 @@
 {
   stdenv, lib, makeWrapper, fetchurl, writeShellScriptBin, findutils, entr, lcov, gnused,
   gdb, writeText, ourPg, checked-shell-script,
-  exts12? [], exts13? [], exts14? [], exts15? [], exts16? [], exts17? []
+  exts12? [], exts13? [], exts14? [], exts15? [], exts16? [], exts17? [], exts18? []
 } :
 let
   isLinux = stdenv.isLinux;
@@ -18,7 +18,7 @@ let
       "ARG_POSITIONAL_SINGLE([operation], [Operation])"
       "ARG_TYPE_GROUP_SET([OPERATION], [OPERATION], [operation], [build,test,coverage,psql,gdb])"
       "ARG_OPTIONAL_SINGLE([version], [v], [PostgreSQL version], [17])"
-      "ARG_TYPE_GROUP_SET([VERSION], [VERSION], [version], [17,16,15,14,13,12])"
+      "ARG_TYPE_GROUP_SET([VERSION], [VERSION], [version], [18,17,16,15,14,13,12])"
       "ARG_LEFTOVERS([psql arguments])"
     ];
   }
@@ -26,6 +26,10 @@ let
   export BUILD_DIR="build-$_arg_version" # this needs to be exported so external `make` commands pick it up
 
   case "$_arg_version" in
+    18)
+      export PATH=${ourPg.postgresql_18}/bin:"$PATH"
+      _ext_paths=${buildExtPaths exts18}
+      ;;
     17)
       export PATH=${ourPg.postgresql_17}/bin:"$PATH"
       _ext_paths=${buildExtPaths exts17}
@@ -123,7 +127,7 @@ let
 
     options="-F -c listen_addresses=\"\" -k $PGDATA"
 
-    pg_ctl start -o "$options"
+    pg_ctl start -l server.log -o "$options"
 
     init_file=test/init.sql
 

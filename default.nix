@@ -21,7 +21,7 @@ in
     inherit checked-shell-script;
   };
   xpgWithExtensions =
-    { exts12 ? [] , exts13 ? [] , exts14 ? [], exts15 ? [], exts16? [], exts17? [] } :
+    { exts12 ? [] , exts13 ? [] , exts14 ? [], exts15 ? [], exts16? [], exts17? [], exts18? [] } :
     callPackage ./nix/xpg.nix {
       inherit ourPg;
       inherit checked-shell-script;
@@ -31,11 +31,13 @@ in
       inherit exts15;
       inherit exts16;
       inherit exts17;
+      inherit exts18;
     };
   xpg-core = callPackage ./nix/xpg-core.nix {
     inherit ourPg;
     inherit checked-shell-script;
   };
+  postgresql_18 = ourPg.postgresql_18;
   postgresql_17 = ourPg.postgresql_17;
   postgresql_16 = ourPg.postgresql_16;
   postgresql_15 = ourPg.postgresql_15;
