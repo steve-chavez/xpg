@@ -128,7 +128,10 @@ let
       map fetchurl (lib.attrValues muslPatches)
     ) ++ lib.optionals stdenv'.isLinux  [
       (if atLeast "13" then ./patches/socketdir-in-run-13+.patch else ./patches/socketdir-in-run.patch)
-    ] ++ (if atLeast "17"
+    ] ++ (
+      if atLeast "18"
+      then []
+      else if atLeast "17"
       then [./patches/17-add-extension_control_path-for.patch]
       else if atLeast "16"
       then [./patches/16-add-extension_control_path-for.patch]

@@ -23,7 +23,7 @@ let
   };
   # TODO: this is duplicated with root/default.nix
   xpgWithExtensions =
-    { exts12 ? [] , exts13 ? [] , exts14 ? [], exts15 ? [], exts16? [], exts17? [] } :
+    { exts12 ? [] , exts13 ? [] , exts14 ? [], exts15 ? [], exts16? [], exts17? [], exts18? [] } :
     callPackage ../nix/xpg.nix {
       inherit ourPg;
       inherit checked-shell-script;
@@ -33,6 +33,7 @@ let
       inherit exts15;
       inherit exts16;
       inherit exts17;
+      inherit exts18;
     };
 in
 {
