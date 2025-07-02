@@ -56,8 +56,14 @@ let
       ;;
   esac
 
-  EXT_DYNLIB_PATHS="$_ext_paths"
-  EXT_CONTROL_PATHS="$_ext_paths"
+  # TODO remove the need for this conditional once we apply the official extension_control_path patch from pg 18
+  if [ "$_arg_version" == "18" ]; then
+    EXT_CONTROL_PATHS="$_ext_paths"
+    EXT_DYNLIB_PATHS="$_ext_paths"
+  else
+    EXT_CONTROL_PATHS="$_ext_paths/extension"
+    EXT_DYNLIB_PATHS="$_ext_paths"
+  fi
 
   pid_file_name="$BUILD_DIR"/bgworker.pid
 
@@ -127,7 +133,7 @@ let
 
     options="-F -c listen_addresses=\"\" -k $PGDATA"
 
-    pg_ctl start -l server.log -o "$options"
+    pg_ctl start -o "$options"
 
     init_file=test/init.sql
 
