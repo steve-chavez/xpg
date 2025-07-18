@@ -8,3 +8,5 @@ results/
 *.out
 coverage.info
 coverage_html
+pltinyexpr.control
+sql/pltinyexpr--*.sql

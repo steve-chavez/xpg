@@ -1,0 +1,9 @@
+hello.control
+regression.*
+results/
+*.so
+*.o
+*.bc
+*.diffs
+*.out
+sql/hello--*.sql
