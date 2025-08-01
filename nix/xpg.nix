@@ -16,7 +16,7 @@ let
     docs = "Develop native PostgreSQL extensions";
     args = [
       "ARG_POSITIONAL_SINGLE([operation], [Operation])"
-      "ARG_TYPE_GROUP_SET([OPERATION], [OPERATION], [operation], [build,test,coverage,psql,gdb])"
+      "ARG_TYPE_GROUP_SET([OPERATION], [OPERATION], [operation], [build,test,coverage,psql,gdb,pgbench])"
       "ARG_OPTIONAL_SINGLE([version], [v], [PostgreSQL version], [17])"
       "ARG_TYPE_GROUP_SET([VERSION], [VERSION], [version], [18,17,16,15,14,13,12])"
       "ARG_LEFTOVERS([psql arguments])"
@@ -190,6 +190,16 @@ let
 
     psql)
       psql "''${_arg_leftovers[@]}"
+      ;;
+
+    pgbench)
+      init_bench_file=bench/init.sql
+
+      if [ -f $init_bench_file ]; then
+        psql -v ON_ERROR_STOP=1 -f $init_bench_file
+      fi
+
+      pgbench "''${_arg_leftovers[@]}"
       ;;
 
     gdb)
