@@ -76,9 +76,7 @@ jobs:
         run: |
           cd examples/hello
           ../../result/bin/xpg -v ${{ matrix.pg-version }} psql -v ON_ERROR_STOP=1 -c "SELECT true;"
-
-          # TODO this fails
-          # ../../result/bin/xpg -v ${{ matrix.pg-version }} test
+          ../../result/bin/xpg -v ${{ matrix.pg-version }} test
 
       - name: Upload to cachix
         run: nix-build -A xpg | cachix push nxpg
