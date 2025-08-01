@@ -69,13 +69,14 @@ jobs:
 
       - name: Build postgres extension
         run: |
-          cd examples/pltinyexpr
+          cd examples/hello
           ../../result/bin/xpg -v ${{ matrix.pg-version }} build
 
       - name: Test postgres extension
         run: |
-          cd examples/pltinyexpr
+          cd examples/hello
           ../../result/bin/xpg -v ${{ matrix.pg-version }} psql -v ON_ERROR_STOP=1 -c "SELECT true;"
+
           # TODO this fails
           # ../../result/bin/xpg -v ${{ matrix.pg-version }} test
 
@@ -102,7 +103,7 @@ jobs:
       - name: Test xpgWithExtensions
         run: |
           nix-build tests
-          cd examples/pltinyexpr
+          cd examples/hello
           ../../result/bin/xpg -v 15 psql -v ON_ERROR_STOP=1 -c "CREATE EXTENSION plpgsql_check;"
 
   build-on-macos:
