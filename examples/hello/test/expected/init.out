@@ -1,0 +1,9 @@
+create extension hello;
+\echo
+
+select hello('world');
+    hello    
+-------------
+ hello world
+(1 row)
+

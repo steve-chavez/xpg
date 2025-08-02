@@ -5,5 +5,4 @@ results/
 *.o
 *.bc
 *.diffs
-*.out
 sql/hello--*.sql

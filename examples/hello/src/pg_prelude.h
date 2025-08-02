@@ -40,6 +40,7 @@
 #include <utils/json.h>
 #include <utils/jsonb.h>
 #include <utils/lsyscache.h>
+#include <utils/typcache.h>
 #include <utils/memutils.h>
 #include <utils/regproc.h>
 #include <utils/snapmgr.h>
