@@ -141,7 +141,7 @@ let
     if [ "$_arg_operation" != psql ]; then
       createdb contrib_regression 1>&2
 
-      if [ -f $init_file ]; then
+      if [ -f $init_file ] && [ "$_arg_operation" != pgbench ]; then # don't run for the pgbench command, it uses different fixtures
         psql -v ON_ERROR_STOP=1 -f $init_file -d contrib_regression 1>&2
       fi
 
