@@ -82,7 +82,7 @@ let
         rm -rf "$BUILD_DIR"/*.o "$BUILD_DIR"/*.so
       fi
 
-      make build COVERAGE=1
+      make build COVERAGE=1 1>&2
       ;;
 
     gdb)
@@ -90,7 +90,7 @@ let
       ;;
 
     *)
-      make build
+      make build 1>&2
       ;;
   esac
 
@@ -106,7 +106,7 @@ let
 
     trap 'pg_ctl stop -m i && rm -rf "$tmpdir" && rm -rf "$pid_file_name"' sigint sigterm exit
 
-    PGTZ=UTC initdb -A trust --no-locale --encoding=UTF8 --nosync -U "$PGUSER"
+    PGTZ=UTC initdb -A trust --no-locale --encoding=UTF8 --nosync -U "$PGUSER" 1>&2
 
     init_script=./test/init.sh
 
@@ -133,22 +133,23 @@ let
 
     options="-F -c listen_addresses=\"\" -k $PGDATA"
 
-    pg_ctl start -o "$options"
+    pg_ctl start -o "$options" 1>&2
 
     init_file=test/init.sql
 
     # if not psql command just use the contrib_regression database for test running
     if [ "$_arg_operation" != psql ]; then
-      createdb contrib_regression
+      createdb contrib_regression 1>&2
 
       if [ -f $init_file ]; then
-        psql -v ON_ERROR_STOP=1 -f $init_file -d contrib_regression
+        psql -v ON_ERROR_STOP=1 -f $init_file -d contrib_regression 1>&2
       fi
+
     else # else use the default postgres db
 
       # TODO: if psql uses a different database, the init file and the pid file name creation won't work
       if [ -f $init_file ]; then
-        psql -v ON_ERROR_STOP=1 -f $init_file
+        psql -v ON_ERROR_STOP=1 -f $init_file 1>&2
       fi
 
       # create a pid file in case the psql command is used, for later analysis
@@ -156,7 +157,7 @@ let
 
       if [ -n "$bgworker_name" ]; then
         # save pid for future invocation
-        psql -t -c "\o $pid_file_name" -c "select pid from pg_stat_activity where backend_type ilike '%$bgworker_name%'"
+        psql -t -c "\o $pid_file_name" -c "select pid from pg_stat_activity where backend_type ilike '%$bgworker_name%'" 1>&2
         ${gnused}/bin/sed '/^''$/d;s/[[:blank:]]//g' -i "$pid_file_name"
       fi
     fi
@@ -196,7 +197,7 @@ let
       init_bench_file=bench/init.sql
 
       if [ -f $init_bench_file ]; then
-        psql -v ON_ERROR_STOP=1 -f $init_bench_file
+        psql -v ON_ERROR_STOP=1 -f $init_bench_file 1>&2
       fi
 
       pgbench "''${_arg_leftovers[@]}"
