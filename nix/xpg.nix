@@ -104,7 +104,7 @@ let
     export PGUSER=postgres
     export PGDATABASE=postgres
 
-    trap 'pg_ctl stop -m i && rm -rf "$tmpdir" && rm -rf "$pid_file_name"' sigint sigterm exit
+    trap 'pg_ctl stop -m i 1>&2 && rm -rf "$tmpdir" && rm -rf "$pid_file_name"' sigint sigterm exit
 
     PGTZ=UTC initdb -A trust --no-locale --encoding=UTF8 --nosync -U "$PGUSER" 1>&2
 
