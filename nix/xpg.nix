@@ -18,6 +18,7 @@ let
       "ARG_POSITIONAL_SINGLE([operation], [Operation])"
       "ARG_TYPE_GROUP_SET([OPERATION], [OPERATION], [operation], [build,test,coverage,psql,gdb,pgbench])"
       "ARG_OPTIONAL_SINGLE([version], [v], [PostgreSQL version], [17])"
+      "ARG_OPTIONAL_SINGLE([options], [o], [Options for the database cluster],)"
       "ARG_TYPE_GROUP_SET([VERSION], [VERSION], [version], [18,17,16,15,14,13,12])"
       "ARG_LEFTOVERS([psql arguments])"
     ];
@@ -133,7 +134,7 @@ let
 
     options="-F -c listen_addresses=\"\" -k $PGDATA"
 
-    pg_ctl start -o "$options" 1>&2
+    pg_ctl start -o "$options" -o "$_arg_options" 1>&2
 
     init_file=test/init.sql
 

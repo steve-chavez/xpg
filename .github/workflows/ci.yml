@@ -76,8 +76,12 @@ jobs:
         run: |
           cd examples/hello
           ../../result/bin/xpg -v ${{ matrix.pg-version }} psql -v ON_ERROR_STOP=1 -c "SELECT true;"
+          ../../result/bin/xpg -v ${{ matrix.pg-version }} psql -v ON_ERROR_STOP=1 -c "SELECT true;"
           ../../result/bin/xpg -v ${{ matrix.pg-version }} test
           ../../result/bin/xpg -v ${{ matrix.pg-version }} pgbench -n -c 1 -T 1 -f bench/query.sql
+
+          # test for options argument
+          ../../result/bin/xpg -v ${{ matrix.pg-version }} --options "-c work_mem=8MB" psql -c "DO \$\$ BEGIN ASSERT current_setting('work_mem') = '8MB'; END \$\$;"
 
       - name: Upload to cachix
         run: nix-build -A xpg | cachix push nxpg
