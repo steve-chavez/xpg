@@ -158,8 +158,9 @@ let
 
       if [ -n "$bgworker_name" ]; then
         # save pid for future invocation
-        psql -t -c "\o $pid_file_name" -c "select pid from pg_stat_activity where backend_type ilike '%$bgworker_name%'" 1>&2
-        ${gnused}/bin/sed '/^''$/d;s/[[:blank:]]//g' -i "$pid_file_name"
+        # these commands will not err, taking into account that background workers are not always available (like on pure SQL extensions)
+        psql -t -c "\o $pid_file_name" -c "select pid from pg_stat_activity where backend_type ilike '%$bgworker_name%'" 2> /dev/null || true
+        ${gnused}/bin/sed '/^''$/d;s/[[:blank:]]//g' -i "$pid_file_name" 2> /dev/null || true
       fi
     fi
 
