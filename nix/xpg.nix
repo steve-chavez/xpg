@@ -138,9 +138,13 @@ let
 
     init_file=test/init.sql
 
-    # if not psql command just use the contrib_regression database for test running
+    # always create the contrib_regression db, for backwards compat
+    # TODO: make this unnecessary
+    createdb contrib_regression 1>&2
+
+    # if not psql command just use the contrib_regression database for running the init_file
+    # TODO: this should be removed and instead the fixtures should be loaded with `xpg psql -f`
     if [ "$_arg_operation" != psql ]; then
-      createdb contrib_regression 1>&2
 
       if [ -f $init_file ] && [ "$_arg_operation" != pgbench ]; then # don't run for the pgbench command, it uses different fixtures
         psql -v ON_ERROR_STOP=1 -f $init_file -d contrib_regression 1>&2
@@ -154,7 +158,7 @@ let
       fi
 
       # create a pid file in case the psql command is used, for later analysis
-      bgworker_name=$(grep -oP '^EXTENSION\s*=\s*\K\S+' Makefile) # TODO: assumes the bgworker has the same name as the extension on the Makefile
+      bgworker_name=$(grep -oP '^EXTENSION\s*=\s*\K\S+' Makefile || true) # TODO: assumes the bgworker has the same name as the extension on the Makefile
 
       if [ -n "$bgworker_name" ]; then
         # save pid for future invocation
