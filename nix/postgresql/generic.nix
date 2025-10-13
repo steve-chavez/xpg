@@ -22,8 +22,9 @@ let
       # for tests
       , testers, nixosTests
 
-      # JIT
+      # JIT / assertions
       , jitSupport
+      , cassertSupport ? false
       , nukeReferences, patchelf, llvmPackages
 
       # PL/Python
@@ -47,7 +48,9 @@ let
     stdenv' = if jitSupport then llvmPackages.stdenv else stdenv;
   in stdenv'.mkDerivation (finalAttrs: {
     inherit version;
-    pname = pname + lib.optionalString jitSupport "-jit";
+    pname = pname
+      + lib.optionalString jitSupport "-jit"
+      + lib.optionalString cassertSupport "-cassert";
 
     src = fetchurl {
       url = "mirror://postgresql/source/v${version}/${pname}-${version}.tar.bz2";
@@ -108,6 +111,7 @@ let
       ++ lib.optionals gssSupport [ "--with-gssapi" ]
       ++ lib.optionals pythonSupport [ "--with-python" ]
       ++ lib.optionals jitSupport [ "--with-llvm" ]
+      ++ lib.optionals cassertSupport [ "--enable-cassert" ]
       ++ lib.optionals stdenv'.isLinux [ "--with-pam" ];
 
     patches = [
@@ -224,6 +228,9 @@ let
       jitToggle = this.override {
         jitSupport = !jitSupport;
       };
+      cassertToggle = this.override {
+        cassertSupport = !cassertSupport;
+      };
     in
     {
       psqlSchema = lib.versions.major version;
@@ -231,11 +238,15 @@ let
       withJIT = if jitSupport then this else jitToggle;
       withoutJIT = if jitSupport then jitToggle else this;
 
+      withCassert = if cassertSupport then this else cassertToggle;
+      withoutCassert = if cassertSupport then cassertToggle else this;
+
       dlSuffix = if olderThan "16" then ".so" else stdenv.hostPlatform.extensions.sharedLibrary;
 
       pkgs = let
         scope = {
           inherit jitSupport;
+          inherit cassertSupport;
           inherit (llvmPackages) llvm;
           postgresql = this;
           stdenv = stdenv';

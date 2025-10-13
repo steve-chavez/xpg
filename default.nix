@@ -38,10 +38,17 @@ in
     inherit checked-shell-script;
   };
   postgresql_18 = ourPg.postgresql_18;
+  postgresql_18_cassert = ourPg.postgresql_18_cassert;
   postgresql_17 = ourPg.postgresql_17;
+  postgresql_17_cassert = ourPg.postgresql_17_cassert;
   postgresql_16 = ourPg.postgresql_16;
+  postgresql_16_cassert = ourPg.postgresql_16_cassert;
   postgresql_15 = ourPg.postgresql_15;
+  postgresql_15_cassert = ourPg.postgresql_15_cassert;
   postgresql_14 = ourPg.postgresql_14;
+  postgresql_14_cassert = ourPg.postgresql_14_cassert;
   postgresql_13 = ourPg.postgresql_13;
+  postgresql_13_cassert = ourPg.postgresql_13_cassert;
   postgresql_12 = ourPg.postgresql_12;
+  postgresql_12_cassert = ourPg.postgresql_12_cassert;
 }

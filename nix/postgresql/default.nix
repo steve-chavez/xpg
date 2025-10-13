@@ -19,16 +19,24 @@ let
     postgresql_18 = ./18.nix;
   };
 
-  mkAttributes = jitSupport:
+  mkAttributes = { jitSupport, cassertSupport }:
     self.lib.mapAttrs' (version: path:
       let
-        attrName = if jitSupport then "${version}_jit" else version;
+        suffixes =
+          self.lib.optional cassertSupport "cassert"
+          ++ self.lib.optional jitSupport "jit";
+        attrName = version
+          + self.lib.optionalString (suffixes != [])
+            ("_" + self.lib.concatStringsSep "_" suffixes);
       in
       self.lib.nameValuePair attrName (import path {
-        inherit jitSupport self;
+        inherit jitSupport cassertSupport self;
       })
     ) versions;
 
 in
-# variations without and with JIT
-(mkAttributes false) // (mkAttributes true)
+# variations for combinations of JIT and cassert support
+(mkAttributes { jitSupport = false; cassertSupport = false; })
+// (mkAttributes { jitSupport = true;  cassertSupport = false; })
+// (mkAttributes { jitSupport = false; cassertSupport = true;  })
+// (mkAttributes { jitSupport = true;  cassertSupport = true;  })
