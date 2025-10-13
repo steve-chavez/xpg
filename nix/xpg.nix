@@ -19,6 +19,7 @@ let
       "ARG_TYPE_GROUP_SET([OPERATION], [OPERATION], [operation], [build,test,coverage,psql,gdb,pgbench])"
       "ARG_OPTIONAL_SINGLE([version], [v], [PostgreSQL version], [17])"
       "ARG_OPTIONAL_SINGLE([options], [o], [Options for the database cluster],)"
+      "ARG_OPTIONAL_BOOLEAN([cassert], [], [Use the cassert-enabled PostgreSQL build])"
       "ARG_TYPE_GROUP_SET([VERSION], [VERSION], [version], [18,17,16,15,14,13,12])"
       "ARG_LEFTOVERS([psql arguments])"
     ];
@@ -28,31 +29,59 @@ let
 
   case "$_arg_version" in
     18)
-      export PATH=${ourPg.postgresql_18}/bin:"$PATH"
+      if [ "$_arg_cassert" = on ]; then
+        export PATH=${ourPg.postgresql_18_cassert}/bin:"$PATH"
+      else
+        export PATH=${ourPg.postgresql_18}/bin:"$PATH"
+      fi
       _ext_paths=${buildExtPaths exts18}
       ;;
     17)
-      export PATH=${ourPg.postgresql_17}/bin:"$PATH"
+      if [ "$_arg_cassert" = on ]; then
+        export PATH=${ourPg.postgresql_17_cassert}/bin:"$PATH"
+      else
+        export PATH=${ourPg.postgresql_17}/bin:"$PATH"
+      fi
       _ext_paths=${buildExtPaths exts17}
       ;;
     16)
-      export PATH=${ourPg.postgresql_16}/bin:"$PATH"
+      if [ "$_arg_cassert" = on ]; then
+        export PATH=${ourPg.postgresql_16_cassert}/bin:"$PATH"
+      else
+        export PATH=${ourPg.postgresql_16}/bin:"$PATH"
+      fi
       _ext_paths=${buildExtPaths exts16}
       ;;
     15)
-      export PATH=${ourPg.postgresql_15}/bin:"$PATH"
+      if [ "$_arg_cassert" = on ]; then
+        export PATH=${ourPg.postgresql_15_cassert}/bin:"$PATH"
+      else
+        export PATH=${ourPg.postgresql_15}/bin:"$PATH"
+      fi
       _ext_paths=${buildExtPaths exts15}
       ;;
     14)
-      export PATH=${ourPg.postgresql_14}/bin:"$PATH"
+      if [ "$_arg_cassert" = on ]; then
+        export PATH=${ourPg.postgresql_14_cassert}/bin:"$PATH"
+      else
+        export PATH=${ourPg.postgresql_14}/bin:"$PATH"
+      fi
       _ext_paths=${buildExtPaths exts14}
       ;;
     13)
-      export PATH=${ourPg.postgresql_13}/bin:"$PATH"
+      if [ "$_arg_cassert" = on ]; then
+        export PATH=${ourPg.postgresql_13_cassert}/bin:"$PATH"
+      else
+        export PATH=${ourPg.postgresql_13}/bin:"$PATH"
+      fi
       _ext_paths=${buildExtPaths exts13}
       ;;
     12)
-      export PATH=${ourPg.postgresql_12}/bin:"$PATH"
+      if [ "$_arg_cassert" = on ]; then
+        export PATH=${ourPg.postgresql_12_cassert}/bin:"$PATH"
+      else
+        export PATH=${ourPg.postgresql_12}/bin:"$PATH"
+      fi
       _ext_paths=${buildExtPaths exts12}
       ;;
   esac
