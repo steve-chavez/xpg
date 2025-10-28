@@ -42,7 +42,12 @@ jobs:
           ../../result/bin/xpg-core test
 
       - name: Upload to cachix
-        run: nix-build -A xpg-core | cachix push nxpg
+        run: |
+          set -euo pipefail
+          result=$(nix-build -A xpg-core)
+          if [ "${GITHUB_REF}" = 'refs/heads/master' ]; then
+            echo "$result" | cachix push nxpg
+          fi
 
   build-test-xpg:
     runs-on: ubuntu-latest
@@ -87,7 +92,12 @@ jobs:
           ../../result/bin/xpg -v ${{ matrix.pg-version }} --cassert psql -c "DO \$\$ BEGIN ASSERT current_setting('debug_assertions') = 'on'; END \$\$;"
 
       - name: Upload to cachix
-        run: nix-build -A xpg | cachix push nxpg
+        run: |
+          set -euo pipefail
+          result=$(nix-build -A xpg)
+          if [ "${GITHUB_REF}" = 'refs/heads/master' ]; then
+            echo "$result" | cachix push nxpg
+          fi
 
   test-nix-expressions:
     runs-on: ubuntu-latest
@@ -128,4 +138,9 @@ jobs:
           authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
 
       - name: Build
-        run: nix-build | cachix push nxpg
+        run: |
+          set -euo pipefail
+          result=$(nix-build)
+          if [ "${GITHUB_REF}" = 'refs/heads/master' ]; then
+            echo "$result" | cachix push nxpg
+          fi
