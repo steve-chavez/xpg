@@ -171,13 +171,18 @@ let
       bash $init_script
     fi
 
-    init_conf=./test/init.conf
+    # pgbench should run with a different conf
+    if [ "$_arg_operation" != pgbench ]; then
+      init_conf=./test/init.conf
 
-    if [ -f $init_conf ]; then
-      cp $init_conf "$tmpdir"/init.conf
-      sed -i "s|@TMPDIR@|$tmpdir|g" "$tmpdir"/init.conf
-    else
-      touch "$tmpdir"/init.conf
+      if [ -f $init_conf ]; then
+        cp $init_conf "$tmpdir"/init.conf
+        sed -i "s|@TMPDIR@|$tmpdir|g" "$tmpdir"/init.conf
+      else
+        touch "$tmpdir"/init.conf
+      fi
+
+      echo "include 'init.conf'" >> "$PGDATA"/postgresql.conf
     fi
 
     # pg versions older than 16 don't support adding "-c" to initdb to add these options
@@ -185,7 +190,6 @@ let
     {
       echo "dynamic_library_path='\$libdir:$EXT_DYNLIB_PATHS'"
       echo "extension_control_path='\$system:$EXT_CONTROL_PATHS'"
-      echo "include 'init.conf'"
     } >> "$PGDATA"/postgresql.conf
 
     options="-F -c listen_addresses=\"\" -k $PGDATA"
