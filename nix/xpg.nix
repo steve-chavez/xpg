@@ -1,6 +1,6 @@
 {
   stdenv, lib, makeWrapper, fetchurl, writeShellScriptBin, findutils, entr, lcov, gnused,
-  gdb, writeText, ourPg, checked-shell-script,
+  gdb, writeText, ourPg, checked-shell-script, git,
   exts12? [], exts13? [], exts14? [], exts15? [], exts16? [], exts17? [], exts18? []
 } :
 let
@@ -20,12 +20,39 @@ let
       "ARG_OPTIONAL_SINGLE([version], [v], [PostgreSQL version], [17])"
       "ARG_OPTIONAL_SINGLE([options], [o], [Options for the database cluster],)"
       "ARG_OPTIONAL_BOOLEAN([cassert], [], [Use the cassert-enabled PostgreSQL build])"
+      "ARG_OPTIONAL_SINGLE([commit], [], [Run the command in a new git worktree and check out <commit>])"
       "ARG_TYPE_GROUP_SET([VERSION], [VERSION], [version], [18,17,16,15,14,13,12])"
       "ARG_LEFTOVERS([psql arguments])"
     ];
   }
   ''
   export BUILD_DIR="build-$_arg_version" # this needs to be exported so external `make` commands pick it up
+
+  registered_trap_cmds=()
+
+  # In Bash only the last `trap` is considered, so we add some util functions to allow us to run multiple traps.
+  # shellcheck disable=SC2317
+  run_traps() {
+    local cmd
+    for cmd in "''${registered_trap_cmds[@]}"; do
+      eval "$cmd"
+    done
+  }
+  add_trap() {
+    local cmd="$1"
+    registered_trap_cmds+=("$cmd")
+  }
+
+  trap run_traps EXIT SIGINT SIGTERM
+
+  if [ -n "$_arg_commit" ]; then
+    worktree_tmpdir="$(mktemp -d)"
+    add_trap "${git}/bin/git worktree remove -f \"\$worktree_tmpdir\" > /dev/null && rm -rf \"\$worktree_tmpdir\""
+
+    ${git}/bin/git worktree add -f "$worktree_tmpdir" "$_arg_commit" > /dev/null
+
+    cd "$worktree_tmpdir"
+  fi
 
   case "$_arg_version" in
     18)
@@ -134,7 +161,7 @@ let
     export PGUSER=postgres
     export PGDATABASE=postgres
 
-    trap 'pg_ctl stop -m i 1>&2 && rm -rf "$tmpdir" && rm -rf "$pid_file_name"' sigint sigterm exit
+    add_trap "pg_ctl stop -m i 1>&2 && rm -rf \"\$tmpdir\" && rm -rf \"\$pid_file_name\""
 
     PGTZ=UTC initdb -A trust --no-locale --encoding=UTF8 --nosync -U "$PGUSER" 1>&2
 
