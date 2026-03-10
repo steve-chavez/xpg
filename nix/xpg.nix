@@ -20,7 +20,6 @@ let
       "ARG_OPTIONAL_SINGLE([version], [v], [PostgreSQL version], [17])"
       "ARG_OPTIONAL_SINGLE([options], [o], [Options for the database cluster],)"
       "ARG_OPTIONAL_SINGLE([init-options], [], [Options for the initialization of pgbench],)"
-
       "ARG_OPTIONAL_BOOLEAN([cassert], [], [Use the cassert-enabled PostgreSQL build])"
       "ARG_OPTIONAL_SINGLE([commit], [], [Run the command in a new git worktree and check out <commit>])"
       "ARG_TYPE_GROUP_SET([VERSION], [VERSION], [version], [18,17,16,15,14,13,12])"
@@ -264,13 +263,13 @@ let
     pgbench)
       init_bench_file=bench/init.sql
 
-      if [ -f $init_bench_file ]; then
-        psql -v ON_ERROR_STOP=1 -f $init_bench_file 1>&2
-      fi
-
       if [ -n "$_arg_init_options" ]; then
         # shellcheck disable=SC2086
         pgbench -i $_arg_init_options
+      fi
+
+      if [ -f $init_bench_file ]; then
+        psql -v ON_ERROR_STOP=1 -f $init_bench_file 1>&2
       fi
 
       pgbench "''${_arg_leftovers[@]}"
