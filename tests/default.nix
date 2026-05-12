@@ -10,5 +10,9 @@ let
   };
 in
 {
-  xpg = xpgPkgs.xpgWithExtensions { exts15 = [ pgsqlcheck15 ]; };
+  xpg = xpgPkgs.xpg.withExtensions {
+    extensions = {
+      "15" = [ pgsqlcheck15 ];
+    };
+  };
 }

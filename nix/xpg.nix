@@ -1,7 +1,7 @@
 {
   stdenv, lib, makeWrapper, fetchurl, writeShellScriptBin, findutils, entr, lcov, gnused,
   gdb, writeText, ourPg, checked-shell-script, git,
-  exts12? [], exts13? [], exts14? [], exts15? [], exts16? [], exts17? [], exts18? []
+  extensions ? {}
 } :
 let
   isLinux = stdenv.isLinux;
@@ -10,6 +10,11 @@ let
     handle SIGSEGV stop nopass
   '';
   buildExtPaths = exts: builtins.concatStringsSep ":" (exts ++ ["$(pwd)/$BUILD_DIR"]); # also append the local build directory
+  extensionsFor = version:
+    if builtins.hasAttr version extensions then
+      builtins.getAttr version extensions
+    else
+      [];
   xpg = checked-shell-script
   {
     name = "xpg";
@@ -62,7 +67,7 @@ let
       else
         export PATH=${ourPg.postgresql_18}/bin:"$PATH"
       fi
-      _ext_paths=${buildExtPaths exts18}
+      _ext_paths=${buildExtPaths (extensionsFor "18")}
       ;;
     17)
       if [ "$_arg_cassert" = on ]; then
@@ -70,7 +75,7 @@ let
       else
         export PATH=${ourPg.postgresql_17}/bin:"$PATH"
       fi
-      _ext_paths=${buildExtPaths exts17}
+      _ext_paths=${buildExtPaths (extensionsFor "17")}
       ;;
     16)
       if [ "$_arg_cassert" = on ]; then
@@ -78,7 +83,7 @@ let
       else
         export PATH=${ourPg.postgresql_16}/bin:"$PATH"
       fi
-      _ext_paths=${buildExtPaths exts16}
+      _ext_paths=${buildExtPaths (extensionsFor "16")}
       ;;
     15)
       if [ "$_arg_cassert" = on ]; then
@@ -86,7 +91,7 @@ let
       else
         export PATH=${ourPg.postgresql_15}/bin:"$PATH"
       fi
-      _ext_paths=${buildExtPaths exts15}
+      _ext_paths=${buildExtPaths (extensionsFor "15")}
       ;;
     14)
       if [ "$_arg_cassert" = on ]; then
@@ -94,7 +99,7 @@ let
       else
         export PATH=${ourPg.postgresql_14}/bin:"$PATH"
       fi
-      _ext_paths=${buildExtPaths exts14}
+      _ext_paths=${buildExtPaths (extensionsFor "14")}
       ;;
     13)
       if [ "$_arg_cassert" = on ]; then
@@ -102,7 +107,7 @@ let
       else
         export PATH=${ourPg.postgresql_13}/bin:"$PATH"
       fi
-      _ext_paths=${buildExtPaths exts13}
+      _ext_paths=${buildExtPaths (extensionsFor "13")}
       ;;
     12)
       if [ "$_arg_cassert" = on ]; then
@@ -110,7 +115,7 @@ let
       else
         export PATH=${ourPg.postgresql_12}/bin:"$PATH"
       fi
-      _ext_paths=${buildExtPaths exts12}
+      _ext_paths=${buildExtPaths (extensionsFor "12")}
       ;;
   esac
 

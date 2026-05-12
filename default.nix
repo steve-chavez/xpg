@@ -14,25 +14,20 @@ let
   checked-shell-script = callPackage ./nix/checked-shell-script.nix {
     inherit lib;
   };
-in
-{
-  xpg = callPackage ./nix/xpg.nix {
+  mkXpg = args: callPackage ./nix/xpg.nix ({
     inherit ourPg;
     inherit checked-shell-script;
-  };
-  xpgWithExtensions =
-    { exts12 ? [] , exts13 ? [] , exts14 ? [], exts15 ? [], exts16? [], exts17? [], exts18? [] } :
-    callPackage ./nix/xpg.nix {
-      inherit ourPg;
-      inherit checked-shell-script;
-      inherit exts12;
-      inherit exts13;
-      inherit exts14;
-      inherit exts15;
-      inherit exts16;
-      inherit exts17;
-      inherit exts18;
+  } // args);
+  xpg =
+    let
+      drv = mkXpg { };
+    in
+    drv // {
+      withExtensions = attrs: mkXpg attrs;
     };
+in
+{
+  inherit xpg;
   xpg-core = callPackage ./nix/xpg-core.nix {
     inherit ourPg;
     inherit checked-shell-script;
