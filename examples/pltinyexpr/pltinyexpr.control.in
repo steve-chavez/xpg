@@ -1,2 +1,0 @@
-default_version = '@EXTVERSION@'
-relocatable = true
