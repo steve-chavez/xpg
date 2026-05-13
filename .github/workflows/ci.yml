@@ -29,17 +29,22 @@ jobs:
       - name: Build xpg-core
         run: nix-build -A xpg-core
 
+      - name: Install xpg-core
+        run: |
+          nix profile install .#xpg-core
+          echo "$HOME/.nix-profile/bin" >> "$GITHUB_PATH"
+
       - name: Build postgres core
         run: |
           cd examples/postgres
-          ../../result/bin/xpg-core build
+          xpg-core build
 
       - name: Test postgres core
         run: |
           cd examples/postgres
-          ../../result/bin/xpg-core psql -v ON_ERROR_STOP=1 -c "SELECT true;"
-          ../../result/bin/xpg-core -k box test
-          ../../result/bin/xpg-core test
+          xpg-core psql -v ON_ERROR_STOP=1 -c "SELECT true;"
+          xpg-core -k box test
+          xpg-core test
 
       - name: Upload to cachix
         run: |
@@ -72,24 +77,29 @@ jobs:
       - name: Build xpg
         run: nix-build -A xpg
 
+      - name: Install xpg and GCC
+        run: |
+          nix profile install .#xpg nixpkgs#gcc14
+          echo "$HOME/.nix-profile/bin" >> "$GITHUB_PATH"
+
       - name: Build postgres extension
         run: |
           cd examples/hello
-          ../../result/bin/xpg -v ${{ matrix.pg-version }} build
+          xpg -v ${{ matrix.pg-version }} build
 
       - name: Test postgres extension
         run: |
           cd examples/hello
-          ../../result/bin/xpg -v ${{ matrix.pg-version }} psql -v ON_ERROR_STOP=1 -c "SELECT true;"
-          ../../result/bin/xpg -v ${{ matrix.pg-version }} psql -v ON_ERROR_STOP=1 -c "SELECT true;"
-          ../../result/bin/xpg -v ${{ matrix.pg-version }} test
-          ../../result/bin/xpg -v ${{ matrix.pg-version }} pgbench -n -c 1 -T 1 -f bench/query.sql
+          xpg -v ${{ matrix.pg-version }} psql -v ON_ERROR_STOP=1 -c "SELECT true;"
+          xpg -v ${{ matrix.pg-version }} psql -v ON_ERROR_STOP=1 -c "SELECT true;"
+          xpg -v ${{ matrix.pg-version }} test
+          xpg -v ${{ matrix.pg-version }} pgbench -n -c 1 -T 1 -f bench/query.sql
 
           # test for options argument
-          ../../result/bin/xpg -v ${{ matrix.pg-version }} --options "-c work_mem=8MB" psql -c "DO \$\$ BEGIN ASSERT current_setting('work_mem') = '8MB'; END \$\$;"
+          xpg -v ${{ matrix.pg-version }} --options "-c work_mem=8MB" psql -c "DO \$\$ BEGIN ASSERT current_setting('work_mem') = '8MB'; END \$\$;"
 
           # test for cassert enabled build
-          ../../result/bin/xpg -v ${{ matrix.pg-version }} --cassert psql -c "DO \$\$ BEGIN ASSERT current_setting('debug_assertions') = 'on'; END \$\$;"
+          xpg -v ${{ matrix.pg-version }} --cassert psql -c "DO \$\$ BEGIN ASSERT current_setting('debug_assertions') = 'on'; END \$\$;"
 
       - name: Upload to cachix
         run: |
@@ -116,6 +126,7 @@ jobs:
           name: nxpg
           authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
 
+      # TODO this is failing with the nix profile way
       - name: Test xpgWithExtensions
         run: |
           nix-build tests
