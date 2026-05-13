@@ -4,7 +4,7 @@ let
       # dependencies
       { stdenv, lib, fetchurl, makeWrapper
       , glibc, zlib, readline, openssl, icu, lz4, zstd, systemd, libossp_uuid
-      , pkg-config, libxml2, tzdata, libkrb5, substituteAll, darwin
+      , pkg-config, libxml2, tzdata, libkrb5, replaceVars, darwin
       , linux-pam
       , bison, flex, perl, docbook_xml_dtd_45, docbook-xsl-nons, libxslt
 
@@ -57,8 +57,6 @@ let
       inherit hash;
     };
 
-    hardeningEnable = lib.optionals (!stdenv'.cc.isClang) [ "pie" ];
-
     outputs = [ "out" "lib" "doc" "man" ];
     setOutputFlags = false; # $out retains configureFlags :-/
 
@@ -88,6 +86,7 @@ let
 
     enableParallelBuilding = true;
 
+    __structuredAttrs = true;
     separateDebugInfo = true;
 
     buildFlags = [ "world" ];
@@ -122,8 +121,7 @@ let
       ./patches/paths-with-postgresql-suffix.patch
 
 
-      (substituteAll {
-        src = ./patches/locale-binary-path.patch;
+      (replaceVars ./patches/locale-binary-path.patch {
         locale = "${if stdenv.isDarwin then darwin.adv_cmds else lib.getBin stdenv.cc.libc}/bin/locale";
       })
 

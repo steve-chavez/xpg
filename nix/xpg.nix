@@ -37,7 +37,7 @@ let
   registered_trap_cmds=()
 
   # In Bash only the last `trap` is considered, so we add some util functions to allow us to run multiple traps.
-  # shellcheck disable=SC2317
+  # shellcheck disable=SC2317,SC2329
   run_traps() {
     local cmd
     for cmd in "''${registered_trap_cmds[@]}"; do
