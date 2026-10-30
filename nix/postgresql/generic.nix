@@ -146,6 +146,9 @@ let
         ""
         + lib.optionalString cassertSupport "-fsanitize=undefined -fno-sanitize-recover=all -fno-omit-frame-pointer "
         + lib.optionalString (cassertSupport && stdenv.isDarwin) "-fno-sanitize=function"
+        # TODO: compiling with clang on darwin with -fsanitize=address results in a binary
+        #       that never returns and pins at 100% CPU saturation of a single core. Possibly
+        #       revisit the below if this ever gets fixed
         + lib.optionalString (cassertSupport && stdenv'.isLinux) "-fsanitize=address";
 
       # Makes cross-compiling work when xml2-config can't be executed on the host.
