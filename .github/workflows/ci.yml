@@ -133,8 +133,7 @@ jobs:
       - name: Test TSAN reporting
         run: |
           cd examples/hello
-          # run test with cassert and injected OOB_WRITE error, print all stdout but exit non zero if 
-          # expected error code not found
+          rm -rf ./build-{{ matrix.pg-version }}
           (HELLO_THREAD_DATA_RACE=1 nix run .#xpg${{ matrix.pg-version }} -- --tsan -v ${{ matrix.pg-version }} test 2>&1 || true) | awk '/WARNING: ThreadSanitizer: data race/  { found=1 } { print } END { if (!found) exit 1 }'
 
 
