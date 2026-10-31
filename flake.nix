@@ -35,6 +35,25 @@
         pkgs.nixfmt-tree
 
       );
+      devShells = forAllSystems (
+        system:
+        let
+          pkgs = import nixpkgs { inherit system; };
+          xpgPkgs = import ./nix/packages.nix { inherit pkgs; };
+        in
+	{
+default = pkgs.mkShell {
+  buildInputs = [
+    pkgs.gcc15
+  ];
+  shellHook = ''
+    export HISTFILE=.history
+  '';
+};
+
+        }
+      );
+
       packages = forAllSystems (
         system:
         let

@@ -76,8 +76,7 @@ jobs:
 
       - name: Install GCC
         run: |
-          nix profile install nixpkgs#gcc15
-          echo "$HOME/.nix-profile/bin" >> "$GITHUB_PATH"
+          nix develop .
 
       # TODO: Currently builds are not fully hermetic. We will care about the state of the machine 
       #       until we can invest in making this repo fully hermetic
