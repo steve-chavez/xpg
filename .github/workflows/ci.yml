@@ -135,6 +135,7 @@ jobs:
         run: |
           cd examples/hello
           rm -rf ./build-{{ matrix.pg-version }}
+          make clean
           (HELLO_THREAD_DATA_RACE=1 nix run .#xpg${{ matrix.pg-version }} -- --tsan -v ${{ matrix.pg-version }} test 2>&1 || true) | awk '/WARNING: ThreadSanitizer: data race/  { found=1 } { print } END { if (!found) exit 1 }'
 
 
