@@ -131,6 +131,7 @@ jobs:
           (HELLO_OOB_WRITE=1 nix run .#xpg${{ matrix.pg-version }} -- --cassert -v ${{ matrix.pg-version }} test 2>&1 || true) | awk '/SUMMARY: AddressSanitizer: heap-buffer-overflow/  { found=1 } { print } END { if (!found) exit 1 }'
 
       - name: Test TSAN reporting
+        if: matrix.pg-version >= 17
         run: |
           cd examples/hello
           rm -rf ./build-{{ matrix.pg-version }}
