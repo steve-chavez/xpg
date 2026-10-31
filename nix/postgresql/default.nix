@@ -21,17 +21,29 @@ let
   };
 
   mkAttributes =
-    { jitSupport, cassertSupport, tsanSupport}:
+    {
+      jitSupport,
+      cassertSupport,
+      tsanSupport,
+    }:
     self.lib.mapAttrs' (
       version: path:
       let
-        suffixes = self.lib.optional cassertSupport "cassert" ++ self.lib.optional jitSupport "jit" ++ self.lib.optional tsanSupport "tsan";
+        suffixes =
+          self.lib.optional cassertSupport "cassert"
+          ++ self.lib.optional jitSupport "jit"
+          ++ self.lib.optional tsanSupport "tsan";
         attrName =
           version + self.lib.optionalString (suffixes != [ ]) ("_" + self.lib.concatStringsSep "_" suffixes);
       in
       self.lib.nameValuePair attrName (
         import path {
-          inherit jitSupport cassertSupport tsanSupport self;
+          inherit
+            jitSupport
+            cassertSupport
+            tsanSupport
+            self
+            ;
         }
       )
     ) versions;
