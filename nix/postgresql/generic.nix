@@ -152,7 +152,7 @@ let
         + lib.optionalString cassertSupport "-fsanitize=undefined -fno-sanitize-recover=all -fno-omit-frame-pointer "
         + lib.optionalString (cassertSupport && stdenv.isDarwin) "-fno-sanitize=function"
         + lib.optionalString (
-          tsanSupport && atLeast "14" && stdenv'.isLinux
+          tsanSupport && atLeast "16" && stdenv'.isLinux
         ) "-fsanitize=thread -fno-sanitize-recover=all"
         # TODO: compiling with clang on darwin with -fsanitize=address results in a binary
         #       that never returns and pins at 100% CPU saturation of a single core. Possibly
