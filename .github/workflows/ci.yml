@@ -82,6 +82,7 @@ jobs:
       #       until we can invest in making this repo fully hermetic
       - name: Print state
         run: |
+          nix develop .
           gcc --version
           ulimit -s
           cat /etc/os-release
@@ -89,11 +90,13 @@ jobs:
 
       - name: Build postgres extension
         run: |
+          nix develop .
           cd examples/hello
           nix run .#xpg${{ matrix.pg-version }} -- build
 
       - name: Test postgres extension
         run: |
+          nix develop .
           cd examples/hello
           nix run .#xpg${{ matrix.pg-version }} -- psql -v ON_ERROR_STOP=1 -c "SELECT true;"
           nix run .#xpg${{ matrix.pg-version }} -- psql -v ON_ERROR_STOP=1 -c "SELECT true;"
@@ -115,6 +118,7 @@ jobs:
 
       - name: Test UBSAN reporting
         run: |
+          nix develop .
           cd examples/hello
           rm -rf ./build-{{ matrix.pg-version }}
 
@@ -124,6 +128,7 @@ jobs:
 
       - name: Test ASAN reporting
         run: |
+          nix develop .
           cd examples/hello
           # run test with cassert and injected OOB_WRITE error, print all stdout but exit non zero if 
           # expected error code not found
@@ -132,6 +137,7 @@ jobs:
       - name: Test TSAN reporting
         if: matrix.pg-version >= 17
         run: |
+          nix develop .
           cd examples/hello
           rm -rf ./build-{{ matrix.pg-version }}
           make clean
