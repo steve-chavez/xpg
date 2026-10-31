@@ -56,7 +56,9 @@ let
       ${
         if cassert then
           ''
-                                    export PATH=${gnumake}/bin:${gcc}/bin:${ourPg."postgresql_${v}_cassert"}/bin:"$PATH"
+                                    export PATH=${gnumake}/bin:${gcc}/bin:${
+                                      ourPg."postgresql_${v}_cassert"
+                                    }/bin:"$PATH"
                                   if [ "$_arg_cassert" = on ]; then
 
                                     # See below links
