@@ -76,8 +76,17 @@ jobs:
 
       - name: Install GCC
         run: |
-          nix profile install nixpkgs#gcc14
+          nix profile install nixpkgs#gcc15
           echo "$HOME/.nix-profile/bin" >> "$GITHUB_PATH"
+
+      # TODO: Currently builds are not fully hermetic. We will care about the state of the machine 
+      #       until we can invest in making this repo fully hermetic
+      - name: Print state
+        run: |
+          gcc --version
+          ulimit -s
+          cat /etc/os-release
+          which gcc
 
       - name: Build postgres extension
         run: |
@@ -96,12 +105,30 @@ jobs:
           nix run .#xpg${{ matrix.pg-version }} -- --options "-c work_mem=8MB" psql -c "DO \$\$ BEGIN ASSERT current_setting('work_mem') = '8MB'; END \$\$;"
 
           # test for cassert enabled build
+          rm -rf build-${{ matrix.pg-version }}
           nix run .#xpg${{ matrix.pg-version }} -- --cassert psql -c "DO \$\$ BEGIN ASSERT current_setting('debug_assertions') = 'on'; END \$\$;"
 
           # test for pg core test
+          rm -rf ./build-{{ matrix.pg-version }}
           if [ "${{ matrix.pg-version }}" -ge 15 ]; then
             nix run .#xpg${{ matrix.pg-version }} -- test-core
           fi
+
+      - name: Test UBSAN reporting
+        run: |
+          cd examples/hello
+          rm -rf ./build-{{ matrix.pg-version }}
+
+          # run test with cassert and injected DIV_BY_ZERO error, print all stdout but exit non zero if 
+          # expected error code not found
+          (HELLO_NULL_PTR_DEREF=1 nix run .#xpg${{ matrix.pg-version }} -- --cassert -v ${{ matrix.pg-version }} test 2>&1 || true) | awk '/runtime error: load of null pointer of type/ { found=1 } { print } END { if (!found) exit 1 }'
+
+      - name: Test ASAN reporting
+        run: |
+          cd examples/hello
+          # run test with cassert and injected OOB_WRITE error, print all stdout but exit non zero if 
+          # expected error code not found
+          (HELLO_OOB_WRITE=1 nix run .#xpg${{ matrix.pg-version }} -- --cassert -v ${{ matrix.pg-version }} test 2>&1 || true) | awk '/SUMMARY: AddressSanitizer: heap-buffer-overflow/  { found=1 } { print } END { if (!found) exit 1 }'
 
       - if: ${{ failure() }}
         run: |

@@ -142,6 +142,15 @@ let
 
       buildFlags = [ "world" ];
 
+      env.CFLAGS =
+        ""
+        + lib.optionalString cassertSupport "-fsanitize=undefined -fno-sanitize-recover=all -fno-omit-frame-pointer "
+        + lib.optionalString (cassertSupport && stdenv.isDarwin) "-fno-sanitize=function"
+        # TODO: compiling with clang on darwin with -fsanitize=address results in a binary
+        #       that never returns and pins at 100% CPU saturation of a single core. Possibly
+        #       revisit the below if this ever gets fixed
+        + lib.optionalString (cassertSupport && stdenv'.isLinux) "-fsanitize=address";
+
       # Makes cross-compiling work when xml2-config can't be executed on the host.
       # Fixed upstream in https://github.com/postgres/postgres/commit/0bc8cebdb889368abdf224aeac8bc197fe4c9ae6
       env.NIX_CFLAGS_COMPILE =
@@ -300,11 +309,12 @@ let
       # autodetection doesn't seem to able to find this, but it's there.
       checkTarget = "check";
 
-      # PG 19+ embeds additional tool paths in installed artifacts, so keep the
-      # stricter gcc-wrapper reference check only for older versions for now.
-      disallowedReferences = lib.optionals (lib.versionOlder (lib.versions.major version) "19") [
-        stdenv'.cc
-      ];
+      # Prevents hardcoded file paths referencing nix store in pg19
+      disallowedReferences =
+        lib.optionals (lib.versionOlder (lib.versions.major version) "19" && !cassertSupport)
+          [
+            stdenv'.cc
+          ];
 
       passthru =
         let
