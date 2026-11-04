@@ -130,6 +130,14 @@ jobs:
           # expected error code not found
           (HELLO_OOB_WRITE=1 nix run .#xpg${{ matrix.pg-version }} -- --cassert -v ${{ matrix.pg-version }} test 2>&1 || true) | awk '/SUMMARY: AddressSanitizer: heap-buffer-overflow/  { found=1 } { print } END { if (!found) exit 1 }'
 
+      - name: Test TSAN reporting
+        run: |
+          cd examples/hello
+          # run test with cassert and injected OOB_WRITE error, print all stdout but exit non zero if 
+          # expected error code not found
+          (HELLO_THREAD_DATA_RACE=1 nix run .#xpg${{ matrix.pg-version }} -- --tsan -v ${{ matrix.pg-version }} test 2>&1 || true) | awk '/WARNING: ThreadSanitizer: data race/  { found=1 } { print } END { if (!found) exit 1 }'
+
+
       - if: ${{ failure() }}
         run: |
           cd examples/hello

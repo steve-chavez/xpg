@@ -34,6 +34,7 @@
   # Disabling this halves the PostgreSQL closure for consumers (e.g. CI) that
   # never pass `--cassert`.
   cassert ? true,
+  tsan ? false,
 }:
 let
   isLinux = stdenv.isLinux;
@@ -64,6 +65,9 @@ let
 
             	        export UBSAN_OPTIONS="print_stacktrace=1:disable_coredump=0:abort_on_error=1:verbosity=2"
             	        export ASAN_OPTIONS="print_stacktrace=1:disable_coredump=0:abort_on_error=1:detect_leaks=0:detect_stack_use_after_return=0"
+	              elif [ "$_arg_tsan" = on ]; then
+                        export PATH=${ourPg."postgresql_${v}_tsan"}/bin:"$PATH"
+            	        export TSAN_OPTIONS="halt_on_error=1"
                       else
                         export PATH=${ourPg."postgresql_${v}"}/bin:"$PATH"
                       fi
@@ -97,6 +101,7 @@ let
           "ARG_OPTIONAL_SINGLE([options], [o], [Options for the database cluster],)"
           "ARG_OPTIONAL_SINGLE([init-options], [], [Options for the initialization of pgbench],)"
           "ARG_OPTIONAL_BOOLEAN([cassert], [], [Use the cassert-enabled PostgreSQL build])"
+          "ARG_OPTIONAL_BOOLEAN([tsan], [], [Use the thread sanitizer PostgreSQL build])"
           "ARG_OPTIONAL_SINGLE([commit], [], [Run the command in a new git worktree and check out <commit>])"
           "ARG_TYPE_GROUP_SET([VERSION], [VERSION], [version], [${builtins.concatStringsSep "," versions}])"
           "ARG_LEFTOVERS([psql arguments])"
