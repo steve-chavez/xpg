@@ -7,6 +7,9 @@
   findutils,
   entr,
   lcov,
+  gcc,
+  gnumake,
+  llvm,
   gnused,
   gdb,
   writeText,
@@ -34,6 +37,7 @@
   # Disabling this halves the PostgreSQL closure for consumers (e.g. CI) that
   # never pass `--cassert`.
   cassert ? true,
+  tsan ? false,
 }:
 let
   isLinux = stdenv.isLinux;
@@ -52,21 +56,26 @@ let
       ${
         if cassert then
           ''
-                      if [ "$_arg_cassert" = on ]; then
-                        export PATH=${ourPg."postgresql_${v}_cassert"}/bin:"$PATH"
+                                    export PATH=${gnumake}/bin:${gcc}/bin:${
+                                      ourPg."postgresql_${v}_cassert"
+                                    }/bin:"$PATH"
+                                  if [ "$_arg_cassert" = on ]; then
 
-                        # See below links
-                        # TODO: detect_stack_use_after_return in ASAN_OPTIONS can be removed after 
-                        #       below patch lands and is backported, thought it will still need to 
-                        #       remain for EOL'd versions
-                        # https://www.postgresql.org/message-id/flat/2kk4z4odvuyrg7qlwjd7ft4eron4cle4btb33v4qatgsdkayir%40gj6e62rgsel4
-                        # https://github.com/postgres/postgres/blob/51ae21aa313bb6b79ad914920279cd0d89e92220/.github/workflows/pg-ci.yml#L464
+                                    # See below links
+                                    # TODO: detect_stack_use_after_return in ASAN_OPTIONS can be removed after 
+                                    #       below patch lands and is backported, thought it will still need to 
+                                    #       remain for EOL'd versions
+                                    # https://www.postgresql.org/message-id/flat/2kk4z4odvuyrg7qlwjd7ft4eron4cle4btb33v4qatgsdkayir%40gj6e62rgsel4
+                                    # https://github.com/postgres/postgres/blob/51ae21aa313bb6b79ad914920279cd0d89e92220/.github/workflows/pg-ci.yml#L464
 
-            	        export UBSAN_OPTIONS="print_stacktrace=1:disable_coredump=0:abort_on_error=1:verbosity=2"
-            	        export ASAN_OPTIONS="print_stacktrace=1:disable_coredump=0:abort_on_error=1:detect_leaks=0:detect_stack_use_after_return=0"
-                      else
-                        export PATH=${ourPg."postgresql_${v}"}/bin:"$PATH"
-                      fi
+                        	        export UBSAN_OPTIONS="print_stacktrace=1:disable_coredump=0:abort_on_error=1:verbosity=2"
+                        	        export ASAN_OPTIONS="print_stacktrace=1:disable_coredump=0:abort_on_error=1:detect_leaks=0:detect_stack_use_after_return=0"
+            	              elif [ "$_arg_tsan" = on ]; then
+                                    export PATH=${ourPg."postgresql_${v}_tsan"}/bin:"$PATH"
+                        	        export TSAN_OPTIONS="halt_on_error=1"
+                                  else
+                                    export PATH=${ourPg."postgresql_${v}"}/bin:"$PATH"
+                                  fi
           ''
         else
           ''
@@ -97,6 +106,7 @@ let
           "ARG_OPTIONAL_SINGLE([options], [o], [Options for the database cluster],)"
           "ARG_OPTIONAL_SINGLE([init-options], [], [Options for the initialization of pgbench],)"
           "ARG_OPTIONAL_BOOLEAN([cassert], [], [Use the cassert-enabled PostgreSQL build])"
+          "ARG_OPTIONAL_BOOLEAN([tsan], [], [Use the thread sanitizer PostgreSQL build])"
           "ARG_OPTIONAL_SINGLE([commit], [], [Run the command in a new git worktree and check out <commit>])"
           "ARG_TYPE_GROUP_SET([VERSION], [VERSION], [version], [${builtins.concatStringsSep "," versions}])"
           "ARG_LEFTOVERS([psql arguments])"
@@ -158,7 +168,7 @@ let
         # commands that require the build ready
         case "$_arg_operation" in
           test)
-            make build TEST=1 1>&2
+            ${gnumake}/bin/make build TEST=1 1>&2
             ;;
 
           coverage)
@@ -166,11 +176,11 @@ let
               rm -rf "$BUILD_DIR"/*.o "$BUILD_DIR"/*.so
             fi
 
-            make build TEST=1 COVERAGE=1 1>&2
+            ${gnumake}/bin/make build TEST=1 COVERAGE=1 1>&2
             ;;
 
           test-core)
-            make build TEST_CORE=1 1>&2
+            ${gnumake}/bin/make build TEST_CORE=1 1>&2
             ;;
 
           gdb)
@@ -178,7 +188,7 @@ let
             ;;
 
           *)
-            make build 1>&2
+            ${gnumake}/bin/make build 1>&2
             ;;
         esac
 
@@ -267,17 +277,17 @@ let
             ;;
 
           test-core)
-            make test-core
+            ${gnumake}/bin/make test-core
             ;;
 
           test)
-            make test
+            ${gnumake}/bin/make test
             ;;
 
           coverage)
             coverage_out_dir=$BUILD_DIR/coverage_html
 
-            make test
+            ${gnumake}/bin/make test
 
             ${lcov}/bin/lcov --capture --directory . --output-file "$COVERAGE_INFO"
 

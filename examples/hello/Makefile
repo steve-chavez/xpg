@@ -19,6 +19,8 @@ endif
 
 UNAME_S := $(shell uname -s)
 
+SHLIB_LINK = -lpthread
+
 ifeq ($(UNAME_S),Darwin)
     SHARED_EXT  := dylib
 else

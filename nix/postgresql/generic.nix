@@ -54,6 +54,7 @@ let
       # JIT / assertions
       jitSupport,
       cassertSupport ? false,
+      tsanSupport ? false,
       nukeReferences,
       patchelf,
       llvmPackages,
@@ -84,7 +85,11 @@ let
     in
     stdenv'.mkDerivation (finalAttrs: {
       inherit version;
-      pname = pname + lib.optionalString jitSupport "-jit" + lib.optionalString cassertSupport "-cassert";
+      pname =
+        pname
+        + lib.optionalString jitSupport "-jit"
+        + lib.optionalString cassertSupport "-cassert"
+        + lib.optionalString tsanSupport "-tsan";
 
       src = fetchurl {
         url = "mirror://postgresql/source/v${version}/${pname}-${version}.tar.bz2";
@@ -146,6 +151,9 @@ let
         ""
         + lib.optionalString cassertSupport "-fsanitize=undefined -fno-sanitize-recover=all -fno-omit-frame-pointer "
         + lib.optionalString (cassertSupport && stdenv.isDarwin) "-fno-sanitize=function"
+        + lib.optionalString (
+          tsanSupport && atLeast "16" && stdenv'.isLinux
+        ) "-fsanitize=thread -fno-sanitize-recover=all"
         # TODO: compiling with clang on darwin with -fsanitize=address results in a binary
         #       that never returns and pins at 100% CPU saturation of a single core. Possibly
         #       revisit the below if this ever gets fixed
