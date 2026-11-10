@@ -52,29 +52,29 @@ let
       ${
         if cassert then
           ''
-                      if [ "$_arg_cassert" = on ]; then
-                        export PATH=${ourPg."postgresql_${v}_cassert"}/bin:"$PATH"
+                                  if [ "$_arg_cassert" = on ]; then
+                                    export PATH=${ourPg."postgresql_${v}_cassert"}/bin:"$PATH"
 
-                        # See below links
-                        # TODO: detect_stack_use_after_return in ASAN_OPTIONS can be removed after 
-                        #       below patch lands and is backported, thought it will still need to 
-                        #       remain for EOL'd versions
-                        # https://www.postgresql.org/message-id/flat/2kk4z4odvuyrg7qlwjd7ft4eron4cle4btb33v4qatgsdkayir%40gj6e62rgsel4
-                        # https://github.com/postgres/postgres/blob/51ae21aa313bb6b79ad914920279cd0d89e92220/.github/workflows/pg-ci.yml#L464
+                                    # See below links
+                                    # TODO: detect_stack_use_after_return in ASAN_OPTIONS can be removed after 
+                                    #       below patch lands and is backported, thought it will still need to 
+                                    #       remain for EOL'd versions
+                                    # https://www.postgresql.org/message-id/flat/2kk4z4odvuyrg7qlwjd7ft4eron4cle4btb33v4qatgsdkayir%40gj6e62rgsel4
+                                    # https://github.com/postgres/postgres/blob/51ae21aa313bb6b79ad914920279cd0d89e92220/.github/workflows/pg-ci.yml#L464
 
-			if [[ -v UBSAN_OPTIONS ]]; then
-				:
-			else
-				export UBSAN_OPTIONS="print_stacktrace=1:disable_coredump=0:abort_on_error=1:verbosity=2"
-			fi
-			if [[ -v ASAN_OPTIONS ]]; then
-				:
-			else
-				export ASAN_OPTIONS="print_stacktrace=1:disable_coredump=0:abort_on_error=1:detect_leaks=0:detect_stack_use_after_return=0"
-		      fi
-                      else
-                        export PATH=${ourPg."postgresql_${v}"}/bin:"$PATH"
-                      fi
+            			if [[ -v UBSAN_OPTIONS ]]; then
+            				:
+            			else
+            				export UBSAN_OPTIONS="print_stacktrace=1:disable_coredump=0:abort_on_error=1:verbosity=2"
+            			fi
+            			if [[ -v ASAN_OPTIONS ]]; then
+            				:
+            			else
+            				export ASAN_OPTIONS="print_stacktrace=1:disable_coredump=0:abort_on_error=1:detect_leaks=0:detect_stack_use_after_return=0"
+            		      fi
+                                  else
+                                    export PATH=${ourPg."postgresql_${v}"}/bin:"$PATH"
+                                  fi
           ''
         else
           ''
