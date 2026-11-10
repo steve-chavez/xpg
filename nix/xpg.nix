@@ -62,10 +62,14 @@ let
                         # https://www.postgresql.org/message-id/flat/2kk4z4odvuyrg7qlwjd7ft4eron4cle4btb33v4qatgsdkayir%40gj6e62rgsel4
                         # https://github.com/postgres/postgres/blob/51ae21aa313bb6b79ad914920279cd0d89e92220/.github/workflows/pg-ci.yml#L464
 
-			if [ -z "$UBSAN_OPTIONS" ]; then
+			if [[ -v UBSAN_OPTIONS ]]; then
+				:
+			else
 				export UBSAN_OPTIONS="print_stacktrace=1:disable_coredump=0:abort_on_error=1:verbosity=2"
 			fi
-			if [ -z "$ASAN_OPTIONS" ]; then
+			if [[ -v ASAN_OPTIONS ]]; then
+				:
+			else
 				export ASAN_OPTIONS="print_stacktrace=1:disable_coredump=0:abort_on_error=1:detect_leaks=0:detect_stack_use_after_return=0"
 		      fi
                       else
